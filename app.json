@@ -9,13 +9,23 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses your location to provide personalized content.",
+        "NSLocationAlwaysUsageDescription": "This app requires access to your location even when running in the background to deliver continuous updates."
+      },
+      "bundleIdentifier": "com.anonymous.parablactionevents"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.anonymous.parablactionevents"
     },
     "web": {
       "bundler": "metro",
@@ -31,6 +41,19 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "pk.eyJ1IjoiZ3Vlcm5pY2EwMTMxIiwiYSI6Ijg4NjJhZDNmYmQ1Y2Q3NDdjZTYyYWFmZGRiNWFmMjZiIn0.pNE8NXrsfYzx4LTz0Zcphw"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show current location on map."
         }
       ]
     ],
