@@ -59,6 +59,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0ace6875-acaa-45e4-b5f3-68cdd5861c28"
+      }
+    },
+    "owner": "guernica0131"
   }
 }

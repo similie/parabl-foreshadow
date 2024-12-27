@@ -5,17 +5,32 @@ import {
   TouchableOpacity,
   Text,
   Dimensions,
+  Modal,
+  Button,
 } from "react-native";
-import MapView, { Region, UrlTile } from "react-native-maps";
-import { getMappingLayer, getUserLocation } from "@libs";
-import type { MapProps, ObjectLocation, WeatherType } from "@types";
+import MapView, {
+  LatLng,
+  LongPressEvent,
+  Region,
+  UrlTile,
+} from "react-native-maps";
+import { getMappingLayer, getUserLocation, runCoordinates } from "@libs";
+import type { MapProps, WeatherType } from "@types";
 import { PlusIcon, MinusIcon } from "react-native-heroicons/solid"; // Icon library
+// import SocketService from "@/libs/websocket";
+import CurrentWeather from "./CurrentWeather";
+import { LocationObjectCoords } from "expo-location";
 const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
+  const [currentCoordinates, setCurrentCoordinates] =
+    useState<LocationObjectCoords | null>(null);
   const [initialRegion, setInitialRegion] = useState<Region | null>(null);
   const [currentRegion, setCurrentRegion] = useState<Region | null>(null);
   const [showRecenterButton, setShowRecenterButton] = useState(false);
-  const mapRef = useRef<MapView | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
+  const mapRef = useRef<MapView | null>(null);
+  // const socket = SocketService.instance;
   const { width: mapViewWidth } = Dimensions.get("window");
 
   const calculateZoomLevel = (longitudeDelta: number) => {
@@ -48,6 +63,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
         };
         setInitialRegion(region);
         setCurrentRegion(region);
+        setCurrentCoordinates(currentLocation.coords);
       } catch (e: any) {
         console.error(e.message);
       }
@@ -95,6 +111,18 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     logZoomLevel(currentRegion);
   };
 
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleLongPress = async (event: LongPressEvent) => {
+    const { coordinate } = event.nativeEvent;
+    setSelectedLocation(coordinate);
+    setModalVisible(true);
+    const results = await runCoordinates(coordinate);
+    console.log("MY COORDINATES ", results);
+  };
+
   const zoomOut = () => {
     setCurrentRegion((prevRegion) => {
       if (prevRegion) {
@@ -117,8 +145,31 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
       {/* {selectedLayers.map((layer, index) => (
         <Text>{layer.layer}</Text>
       ))} */}
+
+      {currentCoordinates && <CurrentWeather coords={currentCoordinates} />}
+
+      {modalVisible && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeModal}
+        >
+          <View className="" style={styles.modalView}>
+            <Text style={styles.modalText}>
+              Selected Location:{" "}
+              {selectedLocation
+                ? `${selectedLocation.latitude}, ${selectedLocation.longitude}`
+                : "N/A"}
+            </Text>
+            <Button title="Close" onPress={closeModal} />
+          </View>
+        </Modal>
+      )}
+
       <MapView
         ref={mapRef}
+        onLongPress={handleLongPress}
         style={styles.map}
         showsUserLocation={true}
         initialRegion={initialRegion || undefined}
@@ -187,6 +238,19 @@ const styles = StyleSheet.create({
   recenterButtonText: {
     color: "#007AFF",
     fontWeight: "bold",
+  },
+  modalView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 20,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 18,
   },
 });
 
