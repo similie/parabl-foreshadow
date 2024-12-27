@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Text, StyleSheet, View } from "react-native";
-import { BottomNav, Map, SideNav } from "@components";
+import { BottomNav, Map, SideNav, SideNavContent } from "@components";
 import { MapProps } from "@types";
-export default function MapScreen() {
+import {
+  httpServer,
+  registerForPushNotificationsAsync,
+  sendPushTokenToServer,
+} from "@libs";
+import SocketService from "@/libs/websocket";
+import { userGlobalStore } from "@/libs/context";
+// import registerNNPushToken from "native-notify";
+// import * as Device from 'expo-device';
+export default function App() {
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
   const [selectedMapLayers, setSelectedMapLayers] = useState<MapProps[]>([]);
-
   const setMapLayers = (layers: string[], time = 0, startTime = new Date()) => {
     setSelectedMapLayers(
       layers.map((layer) => {
@@ -24,16 +32,40 @@ export default function MapScreen() {
     });
   };
 
+  useEffect(() => {
+    const socket = SocketService.instance;
+
+    registerForPushNotificationsAsync()
+      .then((token: string) => {
+        socket.connect(httpServer, token);
+        userGlobalStore.getState().setToken(token);
+        sendPushTokenToServer(token).then((results) => {
+          if (results && results.user) {
+            userGlobalStore.getState().setUser(results.user);
+          }
+          socket.publish("token", { token });
+        });
+      })
+      .catch((e) => {
+        alert(e.message);
+      });
+
+    socket.subscribe("events", (data) => {
+      console.log("EVENTS SUBSCRIPTION", data);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
     <View className="flex-1 relative">
       {/* Map */}
       <Map selectedLayers={selectedMapLayers} />
       {/* Side Drawer */}
       <SideNav>
-        <Text className="text-xl font-bold mb-4">Menu</Text>
-        <Text className="mb-2">Option 1</Text>
-        <Text className="mb-2">Option 2</Text>
-        <Text>Option 3</Text>
+        <SideNavContent />
       </SideNav>
       {
         <BottomNav

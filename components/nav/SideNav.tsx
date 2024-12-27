@@ -1,9 +1,15 @@
 import { LayoutProps } from "@types";
-import React, { useState } from "react";
-import { XMarkIcon, Bars3Icon } from "react-native-heroicons/solid"; // Icon library
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  XMarkIcon,
+  Bars3Icon,
+  UserCircleIcon,
+} from "react-native-heroicons/solid"; // Icon library
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { AnimatePresence, MotiView } from "moti"; // for smooth animations
-
+import { userGlobalStore } from "@/libs/context";
+import { router } from "expo-router";
+import { LogoIcon } from "../branding";
 const styles = StyleSheet.create({
   container: {},
   navbar: {
@@ -13,16 +19,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 16,
   },
-  avatar: {
-    width: 40, // Adjust size as needed
-    height: 40, // Adjust size as needed
-    borderRadius: 20, // Makes the avatar circular if the image is square
-  },
 });
 
 const sideNav: React.FC<LayoutProps> = ({ children }) => {
+  const user = userGlobalStore((state) => state.user);
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const toggleSideDrawer = () => setSideDrawerOpen(!sideDrawerOpen);
+
+  const profileNavigation = () => {
+    router.push("/profile");
+  };
 
   return (
     <>
@@ -46,12 +52,7 @@ const sideNav: React.FC<LayoutProps> = ({ children }) => {
           >
             <View style={styles.navbar}>
               <TouchableOpacity onPress={toggleSideDrawer}>
-                {/* <Avatar */}
-                <Image
-                  source={require("../../assets/images/Similie_Icon_Black_RGB.png")} // Replace with the path to your logo
-                  style={styles.avatar}
-                  resizeMode="contain"
-                />
+                <LogoIcon />
               </TouchableOpacity>
               <Text>Parabl</Text>
               <TouchableOpacity
@@ -61,7 +62,17 @@ const sideNav: React.FC<LayoutProps> = ({ children }) => {
                 <XMarkIcon size={24} color="black" />
               </TouchableOpacity>
             </View>
-            {children}
+            <>{children}</>
+            {user && (
+              <View className="absolute bottom-8 left-8">
+                <TouchableOpacity
+                  className="self-ends"
+                  onPress={profileNavigation}
+                >
+                  <UserCircleIcon color="black" size={36} />
+                </TouchableOpacity>
+              </View>
+            )}
           </MotiView>
         )}
       </AnimatePresence>
