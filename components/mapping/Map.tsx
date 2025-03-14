@@ -13,6 +13,8 @@ import MapView, {
   Marker,
   Callout,
   MapPressEvent,
+  MarkerPressEvent,
+  LongPressEvent,
 } from "react-native-maps";
 import {
   debounceCallback,
@@ -58,8 +60,15 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     y: number;
     name: string;
   } | null>(null);
-
+  // const [targetRegion, setTargetRegion] = useState<Region | null>(null);
   const mapRef = useRef<MapView | null>(null);
+
+  // const recenterMap = (region: Region) => {
+  //   if (!mapRef.current) return;
+  //   setIsRecentering(true);
+  //   setTargetRegion(region);
+  //   mapRef.current.animateToRegion(region, 1000);
+  // };
 
   const calculateZoomLevel = (longitudeDelta: number) => {
     const zoomLevel =
@@ -147,7 +156,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
   };
 
   const handleRegionChangeComplete = async (region: Region) => {
-    if (handleBounceBack(region)) return;
+    if (handleBounceBack(region)) return callBackEvent(region);
 
     setCustomCallout(null);
 
@@ -237,24 +246,19 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     location: LocationPoint,
     coordinate: LatLng,
   ) => {
-    if (Platform.OS === "android") {
-      // Convert coordinate to screen point (if supported by the API)
-      if (mapRef.current && mapRef.current.pointForCoordinate) {
-        mapRef.current
-          .pointForCoordinate(coordinate)
-          .then((point) => {
-            // Adjust position so that the callout appears above the marker
-            setCustomCallout({ x: point.x, y: point.y, name: location.name });
-            // setCustomCallout({ x: point.x, y: point.y, name: location.name });
-          })
-          .catch((err) => console.error("Error converting coordinate:", err));
-      } else {
-        // Fallback if pointForCoordinate isn't available
-        setCustomCallout({ x: 100, y: 100, name: location.name });
-      }
+    // Convert coordinate to screen point (if supported by the API)
+    if (mapRef.current && mapRef.current.pointForCoordinate) {
+      mapRef.current
+        .pointForCoordinate(coordinate)
+        .then((point) => {
+          // Adjust position so that the callout appears above the marker
+          setCustomCallout({ x: point.x, y: point.y, name: location.name });
+          // setCustomCallout({ x: point.x, y: point.y, name: location.name });
+        })
+        .catch((err) => console.error("Error converting coordinate:", err));
     } else {
-      // For iOS, let the native callout work.
-      handleMarkerPress(location);
+      // Fallback if pointForCoordinate isn't available
+      setCustomCallout({ x: 100, y: 100, name: location.name });
     }
   };
 
@@ -268,27 +272,25 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     const coords = {
       ...coordinate,
     };
-
-    const onChange = (region: Region) => {
-      console.log("THIS SHIT IT BOOMO", region);
+    setCurrentCoordinates(coords as LocationObjectCoords);
+    const onChange = () => {
+      runLocationForAndroid(location, coords);
     };
 
     setOnChange((arr) => {
       arr.push(onChange);
       return arr;
     });
-
-    setTimeout(() => {
-      runLocationForAndroid(location, coords);
-    }, 500);
   };
 
   const handleMarkerPress = (location: LocationPoint) => {
     setModalLocation(location);
-    setSelectedLocation({
+    const coords = {
       latitude: location.latitude,
       longitude: location.longitude,
-    });
+    };
+    setSelectedLocation(coords);
+    setCurrentCoordinates(coords as LocationObjectCoords);
     setModalVisible(true);
     // Hide custom callout on Android if present.
     if (Platform.OS === "android") {
@@ -313,6 +315,14 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     [debouncedLocalPress],
   );
 
+  const handlePressEvent = (e: LongPressEvent | MarkerPressEvent) => {
+    const { coordinate } = e.nativeEvent;
+    setCustomCallout(null);
+    setSelectedLocation(coordinate);
+    setModalLocation(null);
+    setModalVisible(true);
+  };
+
   return (
     <View style={styles.container}>
       {currentCoordinates && (!modalVisible || Platform.OS === "ios") && (
@@ -322,7 +332,10 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
       {modalVisible && (
         <ForecastModal
           modalVisible={modalVisible}
-          closeModal={() => setModalVisible(false)}
+          closeModal={() => {
+            setModalVisible(false);
+            setModalLocation(null);
+          }}
           modalLocation={modalLocation}
           selectedLocation={selectedLocation}
         />
@@ -332,11 +345,8 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
         ref={mapRef}
         onPress={handleLocalPress}
         onLongPress={(e) => {
-          const { coordinate } = e.nativeEvent;
-          setCustomCallout(null);
           setTempMarker(null);
-          setSelectedLocation(coordinate);
-          setModalVisible(true);
+          handlePressEvent(e);
         }}
         style={styles.map}
         showsUserLocation={true}
@@ -353,7 +363,10 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
         {tempMarker && (
           <Marker
             pinColor={SIMILIE_BLUE}
-            onPress={(e) => e.stopPropagation()}
+            onPress={(e) => {
+              e.stopPropagation();
+              handlePressEvent(e);
+            }}
             coordinate={tempMarker}
           />
         )}
@@ -370,16 +383,12 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
                   }}
                   onPress={(e) => {
                     e.stopPropagation();
+                    if (e.preventDefault) {
+                      e.preventDefault();
+                    }
                     handleMarkerTap(location, e.nativeEvent.coordinate);
-                    // const coords = {
-                    //   ...e.nativeEvent.coordinate,
-                    // };
-                    // setTimeout(() => {
-                    //   handleMarkerTap(location, coords);
-                    // }, 500);
-                    //
                   }}
-                  pinColor={location.alerts?.length ? "red" : "black"}
+                  pinColor={location.alerts?.length ? "#FF0000" : "#0000FF"}
                 />
               ) : (
                 <Marker

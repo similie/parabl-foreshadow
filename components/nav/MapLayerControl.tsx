@@ -11,7 +11,7 @@ const BottomNav: React.FC<LayerButtonProps> = ({
   onOpacityChange,
 }) => {
   return (
-    <View style={styles.drawerItem} className=" flex-col">
+    <View style={styles.drawerItem} className="pb-4 pt-4 flex-col">
       <View
         style={styles.layerContainer}
         key={layer.id}
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
   layerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 8,
   },
 
   drawerItem: {

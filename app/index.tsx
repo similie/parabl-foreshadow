@@ -82,7 +82,6 @@ export default function App() {
 
   const foreCastAction = (warnings: ForecastWarning[]) => {
     applyToStore(warnings);
-    // console.log("EVENTS SUBSCRIPTION", warnings);
     const showWarnings: string[] = [];
     for (const warning of warnings) {
       const message = `${warning.risk.severity} ${
@@ -100,9 +99,7 @@ export default function App() {
     socket.subscribe("risks/" + user.id, foreCastAction);
   };
 
-  const handleToastHide = () => {
-    // console.log("BOOMO", toastMessages);
-  };
+  const handleToastHide = () => {};
 
   useEffect(() => {
     if (!user) {
@@ -147,6 +144,8 @@ export default function App() {
     }
     // Fetch weather points (and location details) and update the global store.
     getLocationWeatherPoints().then((res) => {
+      console.log("EVENTS SUBSCRIPTION", res);
+      // TODO: remove this
       locationPointGlobalStore.getState().setLocationsList(res);
     });
   }, [user]);
