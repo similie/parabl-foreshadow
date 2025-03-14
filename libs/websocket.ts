@@ -13,6 +13,10 @@ class SocketService {
     return SocketService._instance;
   }
 
+  get connected() {
+    return this.socket?.connected;
+  }
+
   public connect(url: string, token: string): void {
     if (!this.socket) {
       this.socket = io(url, {
@@ -43,10 +47,11 @@ class SocketService {
     this.socket.on(topic, callback);
   }
 
-  public unsubscribe(topic: string): void {
-    if (this.socket) {
-      this.socket.off(topic);
+  public unsubscribe(topic: string, listener?: any): void {
+    if (!this.socket) {
+      return;
     }
+    this.socket.off(topic, listener);
   }
 
   public publish(topic: string, data: any): void {

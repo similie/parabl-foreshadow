@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { View, StyleSheet, Alert } from "react-native";
-import { LoginWithUsername, BrandBar } from "@components";
+import { LoginWithUsername, BrandBar, RouteHome } from "@components";
 
 export default function LoginScreen() {
   const routeHome = () => {
@@ -20,6 +20,7 @@ export default function LoginScreen() {
     <View className="w-full flex-col" style={styles.container}>
       <BrandBar className="mb-4" />
       <LoginWithUsername onNext={setNext} />
+      <RouteHome className="absolute bottom-8" />
     </View>
   );
 }

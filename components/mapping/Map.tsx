@@ -1,26 +1,45 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   StyleSheet,
   View,
   TouchableOpacity,
   Text,
   Dimensions,
-  Modal,
-  Button,
+  Platform,
 } from "react-native";
 import MapView, {
   LatLng,
-  LongPressEvent,
   Region,
-  UrlTile,
+  Marker,
+  Callout,
+  MapPressEvent,
 } from "react-native-maps";
-import { getMappingLayer, getUserLocation, runCoordinates } from "@libs";
-import type { MapProps, WeatherType } from "@types";
-import { PlusIcon, MinusIcon } from "react-native-heroicons/solid"; // Icon library
-// import SocketService from "@/libs/websocket";
+import {
+  debounceCallback,
+  getUserLocation,
+  globalEventEmitter,
+  locationPointGlobalStore,
+  NAVIGATE_TO_GEOPOINT,
+  SIMILIE_BLUE,
+} from "@libs";
+import type { MapProps } from "@types";
+import { PlusIcon, MinusIcon } from "react-native-heroicons/solid";
 import CurrentWeather from "./CurrentWeather";
+import TimeLapseForLayer from "./TimeLapseForLayer";
 import { LocationObjectCoords } from "expo-location";
+import { LocationPoint } from "@/types/context";
+import ForecastModal from "./ForecastModal";
+
+const { width: mapViewWidth } = Dimensions.get("window");
+const THRESHOLD = 0.001;
+const MIN_ZOOM_LEVEL = 2;
+const MAX_LATITUDE_DELTA =
+  (360 / Math.pow(2, MIN_ZOOM_LEVEL)) * (mapViewWidth / 256);
+const MAX_LONGITUDE_DELTA =
+  (360 / Math.pow(2, MIN_ZOOM_LEVEL)) * (mapViewWidth / 256);
+
 const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
+  const locations = locationPointGlobalStore((state) => state.locationsList);
   const [currentCoordinates, setCurrentCoordinates] =
     useState<LocationObjectCoords | null>(null);
   const [initialRegion, setInitialRegion] = useState<Region | null>(null);
@@ -28,10 +47,19 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
   const [showRecenterButton, setShowRecenterButton] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LatLng | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalLocation, setModalLocation] = useState<LocationPoint | null>(
+    null,
+  );
+  const [tempMarker, setTempMarker] = useState<LatLng | null>(null);
+  const [onChange, setOnChange] = useState<((region: Region) => void)[]>([]);
+  // State for custom Android callout overlay
+  const [customCallout, setCustomCallout] = useState<{
+    x: number;
+    y: number;
+    name: string;
+  } | null>(null);
 
   const mapRef = useRef<MapView | null>(null);
-  // const socket = SocketService.instance;
-  const { width: mapViewWidth } = Dimensions.get("window");
 
   const calculateZoomLevel = (longitudeDelta: number) => {
     const zoomLevel =
@@ -40,9 +68,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
   };
 
   const logZoomLevel = async (region: Region) => {
-    if (!mapRef.current) {
-      return;
-    }
+    if (!mapRef.current) return;
     const camera = await mapRef.current.getCamera();
     console.log(
       "Zoom Level:",
@@ -51,125 +77,267 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     );
   };
 
+  const runLocation = async () => {
+    try {
+      setModalLocation(null);
+      const currentLocation = await getUserLocation();
+      const region = {
+        latitude: currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      };
+      setInitialRegion(region);
+      setCurrentRegion(region);
+      setCurrentCoordinates(currentLocation.coords);
+    } catch (e: any) {
+      console.error(e.message);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const currentLocation = await getUserLocation();
-        const region = {
-          latitude: currentLocation.coords.latitude,
-          longitude: currentLocation.coords.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        };
-        setInitialRegion(region);
-        setCurrentRegion(region);
-        setCurrentCoordinates(currentLocation.coords);
-      } catch (e: any) {
-        console.error(e.message);
-      }
-    })();
+    const handler = (geopoint: LocationPoint) => {
+      if (!mapRef.current) return;
+      mapRef.current.animateToRegion(
+        {
+          latitude: geopoint.latitude,
+          longitude: geopoint.longitude,
+          latitudeDelta: currentRegion?.latitudeDelta || 0.0922,
+          longitudeDelta: currentRegion?.longitudeDelta || 0.0421,
+        },
+        1000,
+      );
+      setCurrentCoordinates({
+        latitude: geopoint.latitude,
+        longitude: geopoint.longitude,
+      } as LocationObjectCoords);
+    };
+    setTempMarker(null);
+    globalEventEmitter.on(NAVIGATE_TO_GEOPOINT, handler);
+    runLocation();
+    return () => {
+      globalEventEmitter.off(NAVIGATE_TO_GEOPOINT, handler);
+    };
   }, []);
 
-  const handleRegionChangeComplete = (region: Region) => {
+  const handleBounceBack = (region: Region) => {
+    if (!currentRegion) return false;
+    const latDiff = Math.abs(currentRegion.latitude - region.latitude);
+    const lonDiff = Math.abs(currentRegion.longitude - region.longitude);
+    const latDeltaDiff = Math.abs(
+      currentRegion.latitudeDelta - region.latitudeDelta,
+    );
+    const lonDeltaDiff = Math.abs(
+      currentRegion.longitudeDelta - region.longitudeDelta,
+    );
+    return (
+      latDiff < THRESHOLD &&
+      lonDiff < THRESHOLD &&
+      latDeltaDiff < THRESHOLD &&
+      lonDeltaDiff < THRESHOLD
+    );
+  };
+
+  const callBackEvent = (region: Region) => {
+    let changeFun = onChange.pop();
+    while (changeFun) {
+      changeFun(region);
+      changeFun = onChange.pop();
+    }
+  };
+
+  const handleRegionChangeComplete = async (region: Region) => {
+    if (handleBounceBack(region)) return;
+
+    setCustomCallout(null);
+
+    let { latitudeDelta, longitudeDelta } = region;
+    const currentZoom = calculateZoomLevel(longitudeDelta);
+    if (currentZoom < MIN_ZOOM_LEVEL) {
+      latitudeDelta = Math.min(latitudeDelta, MAX_LATITUDE_DELTA);
+      longitudeDelta = Math.min(longitudeDelta, MAX_LONGITUDE_DELTA);
+      if (initialRegion && mapRef.current) {
+        const correctedRegion = {
+          ...region,
+          latitudeDelta,
+          longitudeDelta,
+        };
+        mapRef.current.animateToRegion(correctedRegion, 200);
+        setCurrentRegion(correctedRegion);
+        return;
+      }
+    }
     setCurrentRegion(region);
     if (initialRegion) {
-      const distance = getDistance(initialRegion, region);
-      setShowRecenterButton(distance > 0.01); // Adjust threshold as needed
+      const distance = Math.sqrt(
+        Math.pow(initialRegion.latitude - region.latitude, 2) +
+          Math.pow(initialRegion.longitude - region.longitude, 2),
+      );
+      setShowRecenterButton(distance > 0.01);
     }
-    logZoomLevel(region);
-    // const zoomLevel = calculateZoomLevel(region.longitudeDelta);
-    // console.log("Zoom Level:", zoomLevel);
+    await logZoomLevel(region);
+    callBackEvent(region);
   };
 
   const recenterMap = () => {
-    if (initialRegion && mapRef.current) {
-      mapRef.current.animateToRegion(initialRegion, 1000); // 1000ms animation
-      setShowRecenterButton(false);
-    }
-  };
-
-  const getDistance = (region1: Region, region2: Region) => {
-    const latDiff = region1.latitude - region2.latitude;
-    const lonDiff = region1.longitude - region2.longitude;
-    return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
+    if (!initialRegion || !mapRef.current) return;
+    setTempMarker(null);
+    mapRef.current.animateToRegion(initialRegion, 1000);
+    setShowRecenterButton(false);
+    setCurrentRegion(initialRegion);
+    setCurrentCoordinates({
+      latitude: initialRegion.latitude,
+      longitude: initialRegion.longitude,
+    } as LocationObjectCoords);
   };
 
   const zoomIn = () => {
     setCurrentRegion((prevRegion) => {
       if (prevRegion) {
+        const newLatitudeDelta = prevRegion.latitudeDelta / 2;
+        const newLongitudeDelta = prevRegion.longitudeDelta / 2;
         return {
           ...prevRegion,
-          latitudeDelta: prevRegion.latitudeDelta / 2,
-          longitudeDelta: prevRegion.longitudeDelta / 2,
+          latitudeDelta: newLatitudeDelta,
+          longitudeDelta: newLongitudeDelta,
         };
       }
       return prevRegion;
     });
-    if (!currentRegion) {
-      return;
-    }
+    if (!currentRegion) return;
     logZoomLevel(currentRegion);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
-  const handleLongPress = async (event: LongPressEvent) => {
-    const { coordinate } = event.nativeEvent;
-    setSelectedLocation(coordinate);
-    setModalVisible(true);
-    const results = await runCoordinates(coordinate);
-    console.log("MY COORDINATES ", results);
   };
 
   const zoomOut = () => {
     setCurrentRegion((prevRegion) => {
       if (prevRegion) {
+        const newLatitudeDelta = prevRegion.latitudeDelta * 2;
+        const newLongitudeDelta = prevRegion.longitudeDelta * 2;
+        if (
+          newLatitudeDelta > MAX_LATITUDE_DELTA ||
+          newLongitudeDelta > MAX_LONGITUDE_DELTA
+        ) {
+          return prevRegion;
+        }
         return {
           ...prevRegion,
-          latitudeDelta: prevRegion.latitudeDelta * 2,
-          longitudeDelta: prevRegion.longitudeDelta * 2,
+          latitudeDelta: newLatitudeDelta,
+          longitudeDelta: newLongitudeDelta,
         };
       }
       return prevRegion;
     });
-    if (!currentRegion) {
-      return;
-    }
+    if (!currentRegion) return;
     logZoomLevel(currentRegion);
   };
 
+  // For iOS, tapping the callout opens the modal.
+  // On Android, tapping a marker will convert its coordinate to screen points and display a custom callout overlay.
+  const runLocationForAndroid = (
+    location: LocationPoint,
+    coordinate: LatLng,
+  ) => {
+    if (Platform.OS === "android") {
+      // Convert coordinate to screen point (if supported by the API)
+      if (mapRef.current && mapRef.current.pointForCoordinate) {
+        mapRef.current
+          .pointForCoordinate(coordinate)
+          .then((point) => {
+            // Adjust position so that the callout appears above the marker
+            setCustomCallout({ x: point.x, y: point.y, name: location.name });
+            // setCustomCallout({ x: point.x, y: point.y, name: location.name });
+          })
+          .catch((err) => console.error("Error converting coordinate:", err));
+      } else {
+        // Fallback if pointForCoordinate isn't available
+        setCustomCallout({ x: 100, y: 100, name: location.name });
+      }
+    } else {
+      // For iOS, let the native callout work.
+      handleMarkerPress(location);
+    }
+  };
+
+  const handleMarkerTap = (location: LocationPoint, coordinate: LatLng) => {
+    setModalLocation(location);
+    setSelectedLocation({
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
+    setTempMarker(null);
+    const coords = {
+      ...coordinate,
+    };
+
+    const onChange = (region: Region) => {
+      console.log("THIS SHIT IT BOOMO", region);
+    };
+
+    setOnChange((arr) => {
+      arr.push(onChange);
+      return arr;
+    });
+
+    setTimeout(() => {
+      runLocationForAndroid(location, coords);
+    }, 500);
+  };
+
+  const handleMarkerPress = (location: LocationPoint) => {
+    setModalLocation(location);
+    setSelectedLocation({
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
+    setModalVisible(true);
+    // Hide custom callout on Android if present.
+    if (Platform.OS === "android") {
+      setCustomCallout(null);
+    }
+  };
+
+  const debouncedLocalPress = useCallback(
+    debounceCallback((coordinate: LatLng) => {
+      setCustomCallout(null);
+      setCurrentCoordinates(coordinate as LocationObjectCoords);
+      setTempMarker(coordinate);
+    }, 300),
+    [],
+  );
+
+  const handleLocalPress = useCallback(
+    (event: MapPressEvent) => {
+      const { coordinate } = event.nativeEvent;
+      debouncedLocalPress(coordinate);
+    },
+    [debouncedLocalPress],
+  );
+
   return (
     <View style={styles.container}>
-      {/* {selectedLayers.map((layer, index) => (
-        <Text>{layer.layer}</Text>
-      ))} */}
-
-      {currentCoordinates && <CurrentWeather coords={currentCoordinates} />}
+      {currentCoordinates && (!modalVisible || Platform.OS === "ios") && (
+        <CurrentWeather location={null} coords={currentCoordinates} />
+      )}
 
       {modalVisible && (
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={closeModal}
-        >
-          <View className="" style={styles.modalView}>
-            <Text style={styles.modalText}>
-              Selected Location:{" "}
-              {selectedLocation
-                ? `${selectedLocation.latitude}, ${selectedLocation.longitude}`
-                : "N/A"}
-            </Text>
-            <Button title="Close" onPress={closeModal} />
-          </View>
-        </Modal>
+        <ForecastModal
+          modalVisible={modalVisible}
+          closeModal={() => setModalVisible(false)}
+          modalLocation={modalLocation}
+          selectedLocation={selectedLocation}
+        />
       )}
 
       <MapView
         ref={mapRef}
-        onLongPress={handleLongPress}
+        onPress={handleLocalPress}
+        onLongPress={(e) => {
+          const { coordinate } = e.nativeEvent;
+          setCustomCallout(null);
+          setTempMarker(null);
+          setSelectedLocation(coordinate);
+          setModalVisible(true);
+        }}
         style={styles.map}
         showsUserLocation={true}
         initialRegion={initialRegion || undefined}
@@ -178,40 +346,119 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
         zoomEnabled={true}
         scrollEnabled={true}
       >
-        {/* Render selected layers here */}
-        {/* urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png" */}
-        {selectedLayers.map((layer, index) => (
-          <UrlTile
-            key={index}
-            urlTemplate={getMappingLayer(
-              layer.layer as WeatherType,
-              layer.time,
-              layer.startTime,
-            )}
-            opacity={0.7}
-            maximumZ={11} // Adjust based on your tile server's capabilities
-            flipY={false} // Set to true if your tile server uses inverted Y coordinates
-          />
+        {selectedLayers.map((layer, layerIndex) => (
+          <TimeLapseForLayer layer={layer} key={`layer-${layerIndex}`} />
         ))}
+
+        {tempMarker && (
+          <Marker
+            pinColor={SIMILIE_BLUE}
+            onPress={(e) => e.stopPropagation()}
+            coordinate={tempMarker}
+          />
+        )}
+
+        {locations &&
+          locations.map((location) =>
+            location ? (
+              Platform.OS === "android" ? (
+                <Marker
+                  key={location?.id}
+                  coordinate={{
+                    latitude: location?.latitude,
+                    longitude: location?.longitude,
+                  }}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleMarkerTap(location, e.nativeEvent.coordinate);
+                    // const coords = {
+                    //   ...e.nativeEvent.coordinate,
+                    // };
+                    // setTimeout(() => {
+                    //   handleMarkerTap(location, coords);
+                    // }, 500);
+                    //
+                  }}
+                  pinColor={location.alerts?.length ? "red" : "black"}
+                />
+              ) : (
+                <Marker
+                  key={location?.id}
+                  coordinate={{
+                    latitude: location?.latitude,
+                    longitude: location?.longitude,
+                  }}
+                  onPress={(e) => e.stopPropagation()}
+                  pinColor={location.alerts?.length ? "red" : "black"}
+                  onCalloutPress={() => handleMarkerPress(location)}
+                >
+                  <Callout style={styles.calloutWrapper}>
+                    <View style={styles.callout}>
+                      <Text style={styles.calloutText}>{location?.name}</Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              )
+            ) : null,
+          )}
       </MapView>
-      {showRecenterButton && (
-        <TouchableOpacity style={styles.recenterButton} onPress={recenterMap}>
+
+      {/* Custom Callout Overlay for Android */}
+      {Platform.OS === "android" && customCallout && (
+        <View
+          style={[
+            styles.customCalloutOverlay,
+            {
+              left: customCallout.x - 50, // adjust based on callout width
+              top: customCallout.y - 70, // position above marker
+            },
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.customCalloutContainer}
+            onPress={() =>
+              handleMarkerPress({
+                latitude: selectedLocation ? selectedLocation.latitude : 0,
+                longitude: selectedLocation ? selectedLocation.longitude : 0,
+                name: customCallout.name,
+              } as LocationPoint)
+            }
+          >
+            <Text style={styles.customCalloutText}>{customCallout.name}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {Platform.OS === "ios" && showRecenterButton && (
+        <TouchableOpacity
+          style={styles.recenterButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            recenterMap();
+          }}
+        >
           <Text style={styles.recenterButtonText}>Recenter</Text>
         </TouchableOpacity>
       )}
 
-      <View className="absolute bottom-24 left-5 flex flex-col space-y-1 space-x-1">
+      <View style={styles.zoomControls}>
         <TouchableOpacity
-          className="bg-white p-3 rounded-full shadow-lg mb-1"
-          onPress={zoomIn}
+          style={styles.zoomButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            zoomIn();
+          }}
         >
-          <PlusIcon />
+          <PlusIcon size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={zoomOut}
-          className="bg-white p-3 rounded-full shadow-lg mt-1"
+          style={styles.zoomButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            zoomOut();
+          }}
         >
-          <MinusIcon />
+          <MinusIcon size={24} color="black" />
         </TouchableOpacity>
       </View>
     </View>
@@ -229,8 +476,8 @@ const styles = StyleSheet.create({
   },
   recenterButton: {
     position: "absolute",
-    bottom: 24,
-    left: 24,
+    bottom: 36,
+    left: 72,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     padding: 10,
     borderRadius: 5,
@@ -239,18 +486,51 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontWeight: "bold",
   },
-  modalView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 20,
+  zoomControls: {
+    position: "absolute",
+    bottom: 64,
+    left: 16,
+    flexDirection: "column",
   },
-  modalText: {
-    marginBottom: 15,
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 18,
+  zoomButton: {
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 25,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  calloutWrapper: {
+    // zIndex: 1000,
+  },
+  callout: {
+    backgroundColor: "white",
+    padding: 8,
+    // zIndex: 50,
+    // borderRadius: 6,
+  },
+  calloutText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  customCalloutOverlay: {
+    position: "absolute",
+    zIndex: 15,
+    // left and top will be dynamically set from state
+  },
+  customCalloutContainer: {
+    backgroundColor: "white",
+    padding: 8,
+    borderRadius: 6,
+    elevation: 5,
+  },
+  customCalloutText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "black",
   },
 });
 

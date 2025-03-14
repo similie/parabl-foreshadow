@@ -5,3 +5,5 @@ export * from "./notification";
 export * from "./config";
 export * from "./profile";
 export * from "./context";
+export * from "./legend";
+export * from "./colors";

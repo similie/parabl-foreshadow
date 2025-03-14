@@ -5,6 +5,7 @@ import * as Notifier from "expo-notifications";
 import axios from "axios";
 import { generateUniqueId } from "./utils";
 import { httpServer } from "./config";
+import { User } from "@/types/context";
 
 // Configure how notifications are displayed when the app is in the foreground
 Notifier.setNotificationHandler({
@@ -15,13 +16,15 @@ Notifier.setNotificationHandler({
   }),
 });
 
-export async function sendPushTokenToServer(token: string) {
+export async function sendPushTokenToServer(token: string, user: User | null) {
   try {
+    const send: { token: string; user?: string } = { token };
+    if (user) {
+      send.user = user.id;
+    }
     const results = await axios.post(
       `${httpServer}/api/v2/user-tokens/search`,
-      {
-        token: token,
-      },
+      send,
     );
     return results.data;
   } catch (error) {
