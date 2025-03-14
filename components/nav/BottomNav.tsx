@@ -59,7 +59,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
 
         {/* Drawer Content */}
         {isOpen && (
-          <ScrollView style={styles.drawerContent}>
+          <ScrollView style={styles.drawerContent} className="w-full">
             {mapLayers.map((layer) => (
               /* selectedLayers.includes(buildLayerItem(layer)) */
               <MapLayerControl
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   drawerOpen: {
-    maxHeight: 300, // Fully expanded
+    maxHeight: 332, // Fully expanded
   },
   drawerClosed: {
     maxHeight: 0, // Completely hidden when closed
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   drawerContent: {
-    padding: 16,
-    marginBottom: 24,
+    paddingLeft: 16,
+    paddingRight: 16,
   },
 });
 export default BottomNav;

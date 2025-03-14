@@ -1,9 +1,7 @@
-plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'com.facebook.react'
-    id 'com.google.gms.google-services'
-}
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
 /**
@@ -88,13 +86,13 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.similie.parablforeshadow'
+    namespace "com.parablforeshadow"
     defaultConfig {
-        applicationId 'com.similie.parablforeshadow'
+        applicationId "com.parablforeshadow"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0"
     }
     signingConfigs {
         debug {
@@ -125,12 +123,6 @@ android {
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
-    }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += ["-Xskip-metadata-version-check"]
-        // Skip checking metadata version
-        // freeCompilerArgs += "-Xskip-metadata-version-check"
     }
 }
 
@@ -181,13 +173,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-
-    // Import the Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:33.10.0')
-
-
-    // TODO: Add the dependencies for Firebase products you want to use
-    // When using the BoM, don't specify versions in Firebase dependencies
-    implementation 'com.google.firebase:firebase-analytics'
-
 }
