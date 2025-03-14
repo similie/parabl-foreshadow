@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "731345457891",
+    "project_id": "parabl-foreshadow-app",
+    "storage_bucket": "parabl-foreshadow-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731345457891:android:8a27e51fd512dee8dd6bd6",
+        "android_client_info": {
+          "package_name": "com.similie.parablforeshadow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf83MyqdNO74ADpOedwunyu4yjqXxQOhQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
