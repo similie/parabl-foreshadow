@@ -59,6 +59,7 @@ const Step2: React.FC<{ onNext: () => void; onPrevious: () => void }> = ({
   return (
     <View style={regStyles.container}>
       <Text style={regStyles.title}>Step 2: Setup Profile</Text>
+      <Text>Full Name</Text>
       <TextInput
         style={regStyles.input}
         placeholder="Full Name"
@@ -66,8 +67,9 @@ const Step2: React.FC<{ onNext: () => void; onPrevious: () => void }> = ({
         onChangeText={setNameDetails}
         autoCapitalize="words"
         autoCorrect={false}
+        returnKeyType="done"
       />
-
+      <Text>Username</Text>
       <UsernameCheck
         setValidity={onValidate}
         userName={username}

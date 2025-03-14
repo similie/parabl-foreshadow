@@ -46,7 +46,6 @@ const UsernameLogin: React.FC<{ onNext: (ready: boolean) => void }> = ({
 
     await storeUserDetails(validation.user);
     onNext(true);
-    console.log("BLOMKSDKFJ", validation);
   };
 
   return (

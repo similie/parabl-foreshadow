@@ -116,12 +116,16 @@ const ProfilePage: React.FC = () => {
             </TouchableOpacity>
           </View>
           {/* User Details */}
-          <Text style={styles.name}>{user!.name}</Text>
-          <Text style={styles.username}>@{user!.userName}</Text>
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Email:</Text>
-            <Text style={styles.infoValue}>{user!.email}</Text>
-          </View>
+          {user && (
+            <>
+              <Text style={styles.name}>{user!.name}</Text>
+              <Text style={styles.username}>@{user!.userName}</Text>
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoLabel}>Email:</Text>
+                <Text style={styles.infoValue}>{user!.email}</Text>
+              </View>
+            </>
+          )}
           {/* <View style={styles.infoContainer}>
             <Text style={styles.infoLabel}>Phone:</Text>
             <Text style={styles.infoValue}>{user!.phone || ""}</Text>

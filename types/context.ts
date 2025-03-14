@@ -1,3 +1,5 @@
+import { AttentionAlert, ForecastWarning, RiskIndicator } from "./weather";
+
 export type User = {
   id: string;
   userName: string;
@@ -12,6 +14,27 @@ export interface UserContextItems {
   token: string;
   setUser: (user: User | null) => void;
   setToken: (token: string) => void;
+}
+
+export interface ForecastAlertsStore {
+  alerts: Record<string, ForecastWarning[]>;
+  addAlert: (locationId: string, alert: ForecastWarning) => void;
+  removeAlerts: (locationId: string) => void;
+  clearAlerts: () => void;
+}
+
+export interface LocationPoint {
+  id: string;
+  latitude: number;
+  longitude: number;
+  name: string;
+  user: string;
+  alerts?: RiskIndicator[];
+}
+
+export interface LocationContextItems {
+  locationsList: LocationPoint[];
+  setLocationsList: (locationsList?: LocationPoint[]) => void;
 }
 
 export interface UserRegistration {

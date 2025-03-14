@@ -1,11 +1,17 @@
 import { LayoutProps } from "@types";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   XMarkIcon,
   Bars3Icon,
   UserCircleIcon,
 } from "react-native-heroicons/solid"; // Icon library
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
 import { AnimatePresence, MotiView } from "moti"; // for smooth animations
 import { userGlobalStore } from "@/libs/context";
 import { router } from "expo-router";
@@ -34,7 +40,9 @@ const sideNav: React.FC<LayoutProps> = ({ children }) => {
     <>
       {/* Hamburger Menu */}
       <TouchableOpacity
-        className="absolute top-16 left-5 bg-white p-3 rounded-full shadow-lg"
+        className={`absolute ${
+          Platform.OS === "android" ? "top-4" : "top-16"
+        } left-5 bg-white p-3 rounded-full shadow-lg `}
         onPress={toggleSideDrawer}
       >
         <Bars3Icon size={24} color="black" />
@@ -48,7 +56,9 @@ const sideNav: React.FC<LayoutProps> = ({ children }) => {
             animate={{ translateX: 0 }}
             exit={{ translateX: -300 }}
             transition={{ type: "timing", duration: 300 }}
-            className="absolute top-0 left-0 h-full w-3/4 bg-white shadow-xl p-4 pt-16"
+            className={`absolute top-0 left-0 h-full w-3/4 bg-white shadow-xl p-4 ${
+              Platform.OS === "android" ? "pt-4" : "pt-16"
+            } z-20`}
           >
             <View style={styles.navbar}>
               <TouchableOpacity onPress={toggleSideDrawer}>

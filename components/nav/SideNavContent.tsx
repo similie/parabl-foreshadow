@@ -1,8 +1,9 @@
 import { router } from "expo-router";
-import { getUserDetails } from "@libs";
+import { getUserDetails, SIMILIE_BLUE } from "@libs";
 import { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { userGlobalStore } from "@/libs/context";
+import { LocationsList } from ".";
 const sideNavContent: React.FC = () => {
   const user = userGlobalStore((state) => state.user);
 
@@ -24,20 +25,24 @@ const sideNavContent: React.FC = () => {
   return (
     <View style={styles.container}>
       {user ? (
-        <Text>Welcome back, {user.name}</Text>
+        <View className="w-full" style={styles.locations}>
+          <Text>Welcome back, {user.name}</Text>
+
+          <LocationsList user={user} />
+        </View>
       ) : (
         <View>
           <TouchableOpacity
-            className="mt-5 bg-blue-500 px-8 py-3 rounded-lg"
+            className="mt-5 bg-black px-8 py-3 rounded-lg"
             onPress={handleRegister}
           >
-            <Text className="t1ext-white text-lg font-bold">Register</Text>
+            <Text className="text-white text-lg font-bold">Register</Text>
           </TouchableOpacity>
           <Text className="mt-4" style={styles.text}>
             or{" "}
             <Text
-              className="color-blue-400"
               style={styles.linkText}
+              selectionColor={SIMILIE_BLUE}
               onPress={handleLogin}
             >
               login
@@ -55,17 +60,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   linkText: {
-    // color: "#007AFF",
     fontSize: 16,
     textAlign: "center",
     fontWeight: "bold",
     textDecorationLine: "underline",
   },
+  locations: {
+    alignSelf: "flex-start",
+    flexGrow: 1,
+    textAlign: "center",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
   },
 });
 

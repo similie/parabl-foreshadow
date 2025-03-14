@@ -1,22 +1,23 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { MotiView } from "moti";
 import { ChevronUpIcon, ChevronDownIcon } from "react-native-heroicons/solid";
 import { BottomNavProps } from "@types";
-
+import { MapLayerControl } from "@components";
+import { buildLayerItem, mapLayers } from "@libs";
 const BottomNav: React.FC<BottomNavProps> = ({
   selectedLayers,
   onToggleLayer,
+  onOpacityChange,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  const mapLayers = [
-    { id: "temperature", label: "Temperature" },
-    { id: "precipitation", label: "Precipitation" },
-    { id: "wind", label: "Wind" },
-  ];
-
   const handleGestureEvent = (event: any) => {
     const { translationY, velocityY } = event.nativeEvent;
 
@@ -58,27 +59,28 @@ const BottomNav: React.FC<BottomNavProps> = ({
 
         {/* Drawer Content */}
         {isOpen && (
-          <View style={styles.drawerContent}>
+          <ScrollView style={styles.drawerContent}>
             {mapLayers.map((layer) => (
-              <TouchableOpacity
-                key={layer.id}
-                style={styles.drawerItem}
-                onPress={() => onToggleLayer(layer.id)}
-              >
-                <Text style={styles.drawerItemText}>{layer.label}</Text>
-                <Text style={styles.drawerItemText}>
-                  {selectedLayers.includes(layer.id) ? "On" : "Off"}
-                </Text>
-              </TouchableOpacity>
+              /* selectedLayers.includes(buildLayerItem(layer)) */
+              <MapLayerControl
+                layer={layer}
+                key={buildLayerItem(layer)}
+                onToggleLayer={onToggleLayer}
+                onOpacityChange={onOpacityChange}
+                active={selectedLayers.includes(buildLayerItem(layer))}
+              />
             ))}
-          </View>
+          </ScrollView>
         )}
       </MotiView>
 
       {!isOpen && (
         <TouchableOpacity
-          className="absolute bottom-5 right-8 bg-white p-3 rounded-full shadow-lg"
-          onPress={toggleDrawer}
+          className="absolute bottom-20 right-8 bg-white p-3 rounded-full shadow-lg"
+          onPress={(e) => {
+            e.stopPropagation();
+            toggleDrawer();
+          }}
         >
           <ChevronUpIcon size={24} color="black" />
         </TouchableOpacity>
@@ -125,16 +127,6 @@ const styles = StyleSheet.create({
   drawerContent: {
     padding: 16,
     marginBottom: 24,
-  },
-  drawerItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  drawerItemText: {
-    fontSize: 14,
   },
 });
 export default BottomNav;

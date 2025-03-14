@@ -63,6 +63,7 @@ const UsernameCheck: React.FC<{
         autoCorrect={false}
         onChangeText={handleChange}
         className={className}
+        returnKeyType="done"
       />
       {validUsernameText && (
         <Text className={validUsername ? "color-green-600 " : "color-red-600"}>

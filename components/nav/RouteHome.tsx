@@ -7,7 +7,7 @@ const routeHome: React.FC<{ className?: string }> = ({ className }) => {
   };
   return (
     <TouchableOpacity className={className} onPress={routeHome}>
-      <HomeIcon />
+      <HomeIcon size={24} color="black" />
     </TouchableOpacity>
   );
 };
