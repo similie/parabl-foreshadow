@@ -381,6 +381,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
                     latitude: location?.latitude,
                     longitude: location?.longitude,
                   }}
+                  tracksViewChanges={true}
                   onPress={(e) => {
                     e.stopPropagation();
                     if (e.preventDefault) {

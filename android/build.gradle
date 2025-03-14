@@ -22,11 +22,11 @@ buildscript {
     }
 }
 
-// apply plugin: "com.facebook.react.rootproject"
-plugins {
-    id("com.facebook.react.settings")
-    id("com.google.gms.google-services") apply false
-}
+apply plugin: "com.facebook.react.rootproject"
+// plugins {
+//     id("com.facebook.react.settings")
+//     id("com.google.gms.google-services") apply false
+// }
 
 allprojects {
     repositories {
