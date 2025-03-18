@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Parabl Foreshadow",
+    "name": "Parabl",
     "slug": "parabl-foreshadow",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -71,6 +71,7 @@
       "typedRoutes": true
     },
     "extra": {
+      "googleApiKey": "***REMOVED***",
       "router": {
         "origin": false
       },

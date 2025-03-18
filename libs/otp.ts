@@ -1,10 +1,10 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import { getApiUrl } from "./config";
 import { userGlobalStore } from "./context";
-import { User } from "@/types/context";
+// import { User } from "@/types/context";
 import { OTPValidation } from "@types";
 
-export const verifyOTPValidity = (results: axios.AxiosResponse) => {
+export const verifyOTPValidity = (results: AxiosResponse) => {
   if (results.status === 200) {
     return;
   }

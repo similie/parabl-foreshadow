@@ -4,18 +4,10 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@types": [
-        "./types"
-      ],
-      "@libs": [
-        "./libs"
-      ],
-      "@components": [
-        "./components"
-      ],
-      "@/*": [
-        "./*"
-      ]
+      "@types": ["./types"],
+      "@libs": ["./libs"],
+      "@components": ["./components"],
+      "@/*": ["./*"]
     }
   },
   "include": [

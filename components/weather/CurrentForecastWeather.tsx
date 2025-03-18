@@ -215,7 +215,7 @@ const CurrentWeather: React.FC<CurrentWeatherDrawerProps> = ({
                   {currentLocation?.name}
                 </Text>
                 <TouchableOpacity
-                  className="bg-red-500 hover:bg-red-700  p-4 pt-6 *:active:bg-gray-700  text-white text-center  font-bold  rounded-full  shadow-md"
+                  className="bg-red-500 hover:bg-red-700  p-4  *:active:bg-gray-700  text-white text-center  font-bold  rounded-full  shadow-md"
                   onPress={removeLocationToAlerts}
                   disabled={!currentLocation.id}
                 >

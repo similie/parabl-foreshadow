@@ -1,5 +1,5 @@
 import { LayoutProps } from "@types";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   XMarkIcon,
   Bars3Icon,
@@ -16,6 +16,7 @@ import { AnimatePresence, MotiView } from "moti"; // for smooth animations
 import { userGlobalStore } from "@/libs/context";
 import { router } from "expo-router";
 import { LogoIcon } from "../branding";
+import { globalEventEmitter, NAVIGATE_TO_GEOPOINT } from "@libs";
 const styles = StyleSheet.create({
   container: {},
   navbar: {
@@ -36,11 +37,23 @@ const sideNav: React.FC<LayoutProps> = ({ children }) => {
     router.push("/profile");
   };
 
+  const handleContentSelected = () => {
+    setSideDrawerOpen(false);
+  };
+
+  useEffect(() => {
+    globalEventEmitter.on(NAVIGATE_TO_GEOPOINT, handleContentSelected);
+
+    return () => {
+      globalEventEmitter.off(NAVIGATE_TO_GEOPOINT, handleContentSelected);
+    };
+  }, []);
+
   return (
     <>
       {/* Hamburger Menu */}
       <TouchableOpacity
-        className={`absolute ${
+        className={`absolute  ${
           Platform.OS === "android" ? "top-4" : "top-16"
         } left-5 bg-white p-3 rounded-full shadow-lg `}
         onPress={toggleSideDrawer}

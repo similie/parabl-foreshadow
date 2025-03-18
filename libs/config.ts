@@ -1,7 +1,9 @@
-// export const httpServer = "https://f925-185-238-231-55.ngrok-free.app";
-export const httpServer = "https://foreshadow.parabl.io"; // "http://localhost:1612";
+import Constants from "expo-constants";
+export const httpServer =
+  Constants.expoConfig?.extra?.parablForeshadowApiHost ||
+  "https://foreshadow.parabl.io"; // "http://localhost:1612";
 // export const tileServer = "http://prime.local:5001";
-export const API_ROUTE = "/api/v2/";
+export const API_ROUTE = Constants.expoConfig?.extra?.apiBasePath || "/api/v2/";
 export const tileServer = `${httpServer}${API_ROUTE}weather`;
 
 export const getApiUrl = (...route: string[]) => {
