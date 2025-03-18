@@ -83,6 +83,7 @@ export const logoutUser = () => {
 
 export const storeUserDetails = async (user: User) => {
   try {
+    // userGlobalStore((state) => state.setUser(user));
     userGlobalStore.getState().setUser(user);
     const jsonValue = JSON.stringify(user);
     await AsyncStorage.setItem("@user", jsonValue);
@@ -95,7 +96,11 @@ export const getUserDetails = async (): Promise<User | null> => {
   try {
     const jsonValue = await AsyncStorage.getItem("@user");
     const user = jsonValue != null ? JSON.parse(jsonValue) : null;
-    userGlobalStore.getState().setUser(user);
+    // userGlobalStore((state) => state.setUser(user));
+    if (user && !userGlobalStore.getState().user) {
+      userGlobalStore.getState().setUser(user);
+    }
+
     return user;
   } catch (e) {
     console.error("Error retrieving user data:", e);

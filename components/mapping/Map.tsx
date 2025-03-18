@@ -23,14 +23,16 @@ import {
   locationPointGlobalStore,
   NAVIGATE_TO_GEOPOINT,
   SIMILIE_BLUE,
+  userGlobalStore,
 } from "@libs";
-import type { MapProps } from "@types";
+import type { MapProps, SelectedAddress } from "@types";
 import { PlusIcon, MinusIcon } from "react-native-heroicons/solid";
 import CurrentWeather from "./CurrentWeather";
 import TimeLapseForLayer from "./TimeLapseForLayer";
 import { LocationObjectCoords } from "expo-location";
 import { LocationPoint } from "@/types/context";
 import ForecastModal from "./ForecastModal";
+import MapSearchBar from "./MapSearchBar";
 
 const { width: mapViewWidth } = Dimensions.get("window");
 const THRESHOLD = 0.001;
@@ -41,6 +43,7 @@ const MAX_LONGITUDE_DELTA =
   (360 / Math.pow(2, MIN_ZOOM_LEVEL)) * (mapViewWidth / 256);
 
 const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
+  const user = userGlobalStore((state) => state.user);
   const locations = locationPointGlobalStore((state) => state.locationsList);
   const [currentCoordinates, setCurrentCoordinates] =
     useState<LocationObjectCoords | null>(null);
@@ -62,14 +65,6 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
   } | null>(null);
   // const [targetRegion, setTargetRegion] = useState<Region | null>(null);
   const mapRef = useRef<MapView | null>(null);
-
-  // const recenterMap = (region: Region) => {
-  //   if (!mapRef.current) return;
-  //   setIsRecentering(true);
-  //   setTargetRegion(region);
-  //   mapRef.current.animateToRegion(region, 1000);
-  // };
-
   const calculateZoomLevel = (longitudeDelta: number) => {
     const zoomLevel =
       Math.log2((360 * (mapViewWidth / 256)) / longitudeDelta) + 1;
@@ -264,10 +259,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
 
   const handleMarkerTap = (location: LocationPoint, coordinate: LatLng) => {
     setModalLocation(location);
-    setSelectedLocation({
-      latitude: location.latitude,
-      longitude: location.longitude,
-    });
+    setSelectedLocation(location);
     setTempMarker(null);
     const coords = {
       ...coordinate,
@@ -323,6 +315,40 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
     setModalVisible(true);
   };
 
+  const onSelect = (address: SelectedAddress) => {
+    // Define a new region around the selected location
+    // Adjust latitudeDelta and longitudeDelta for your desired zoom level
+    const newRegion: Region = {
+      latitude: address.latitude,
+      longitude: address.longitude,
+      latitudeDelta: 0.02,
+      longitudeDelta: 0.02,
+    };
+
+    // Animate the map to the new region
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(newRegion, 1000);
+    }
+
+    // Update state so that a marker is placed at the selected location.
+    const coords = {
+      latitude: address.latitude,
+      longitude: address.longitude,
+    };
+    setSelectedLocation(coords);
+    setCurrentRegion(newRegion);
+    setCurrentCoordinates(coords as LocationObjectCoords);
+
+    const onChange = () => {
+      setTempMarker(coords);
+    };
+
+    setOnChange((arr) => {
+      arr.push(onChange);
+      return arr;
+    });
+  };
+
   return (
     <View style={styles.container}>
       {currentCoordinates && (!modalVisible || Platform.OS === "ios") && (
@@ -340,7 +366,15 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
           selectedLocation={selectedLocation}
         />
       )}
-
+      <View
+        className={`absolute w-full     ${
+          Platform.OS === "ios"
+            ? `pl-4 bottom-9 z-20  ${user ? "pr-28" : "pr-4"}`
+            : `pl-2 left-0 bottom-4 z-10 ${user ? "pr-28" : "pr-4"}`
+        }`}
+      >
+        <MapSearchBar onSelect={onSelect} />
+      </View>
       <MapView
         ref={mapRef}
         onPress={handleLocalPress}
@@ -348,6 +382,11 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
           setTempMarker(null);
           handlePressEvent(e);
         }}
+        mapPadding={
+          Platform.OS === "android"
+            ? { top: 0, right: 0, bottom: 46, left: 0 }
+            : { top: 0, right: 0, bottom: -32, left: 8 }
+        }
         style={styles.map}
         showsUserLocation={true}
         initialRegion={initialRegion || undefined}
@@ -426,13 +465,7 @@ const Map: React.FC<{ selectedLayers: MapProps[] }> = ({ selectedLayers }) => {
         >
           <TouchableOpacity
             style={styles.customCalloutContainer}
-            onPress={() =>
-              handleMarkerPress({
-                latitude: selectedLocation ? selectedLocation.latitude : 0,
-                longitude: selectedLocation ? selectedLocation.longitude : 0,
-                name: customCallout.name,
-              } as LocationPoint)
-            }
+            onPress={() => handleMarkerPress(selectedLocation as LocationPoint)}
           >
             <Text style={styles.customCalloutText}>{customCallout.name}</Text>
           </TouchableOpacity>
@@ -486,8 +519,8 @@ const styles = StyleSheet.create({
   },
   recenterButton: {
     position: "absolute",
-    bottom: 36,
-    left: 72,
+    bottom: 84,
+    right: 24,
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     padding: 10,
     borderRadius: 5,
@@ -498,7 +531,7 @@ const styles = StyleSheet.create({
   },
   zoomControls: {
     position: "absolute",
-    bottom: 64,
+    bottom: Platform.OS === "android" ? 64 : 74,
     left: 16,
     flexDirection: "column",
   },

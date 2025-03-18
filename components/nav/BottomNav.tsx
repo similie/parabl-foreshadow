@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { MotiView } from "moti";
@@ -59,7 +60,7 @@ const BottomNav: React.FC<BottomNavProps> = ({
 
         {/* Drawer Content */}
         {isOpen && (
-          <ScrollView style={styles.drawerContent} className="w-full">
+          <ScrollView style={styles.drawerContent} className="w-full ">
             {mapLayers.map((layer) => (
               /* selectedLayers.includes(buildLayerItem(layer)) */
               <MapLayerControl
@@ -76,7 +77,9 @@ const BottomNav: React.FC<BottomNavProps> = ({
 
       {!isOpen && (
         <TouchableOpacity
-          className="absolute bottom-20 right-8 bg-white p-3 rounded-full shadow-lg"
+          className={`absolute  z-20 right-8 bg-white p-3 rounded-full shadow-lg ${
+            Platform.OS === "ios" ? "bottom-9" : "bottom-4"
+          } `}
           onPress={(e) => {
             e.stopPropagation();
             toggleDrawer();
@@ -103,7 +106,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
-    zIndex: 10,
+    zIndex: 20,
   },
   drawerOpen: {
     maxHeight: 332, // Fully expanded

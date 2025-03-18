@@ -4,9 +4,7 @@ import {
   SafeAreaView,
   View,
   TouchableOpacity,
-  Text,
   StyleSheet,
-  Dimensions,
   Platform,
 } from "react-native";
 import { XMarkIcon } from "react-native-heroicons/solid";
@@ -21,20 +19,12 @@ interface FullScreenModalProps {
   selectedLocation: LatLng | null;
 }
 
-const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
-
 const FullScreenModal: React.FC<FullScreenModalProps> = ({
   modalVisible,
   closeModal,
   modalLocation,
   selectedLocation,
 }) => {
-  console.log(
-    "THJIOS OIS MY FUCKING LOCATIONSDJFNKJSHDFSKHJDFSDKJF",
-    selectedLocation,
-    modalLocation,
-  );
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <Modal

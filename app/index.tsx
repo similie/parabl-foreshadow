@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Platform } from "react-native";
+import { StyleSheet, View, Platform, KeyboardAvoidingView } from "react-native";
 import {
   BottomNav,
   Map,
@@ -23,8 +23,6 @@ import {
   userGlobalStore,
 } from "@/libs/context";
 import { User } from "@/types/context";
-// import registerNNPushToken from "native-notify";
-// import * as Device from 'expo-device';
 export default function App() {
   const user = userGlobalStore((state) => state.user);
   const [selectedLayers, setSelectedLayers] = useState<string[]>([]);
@@ -100,6 +98,11 @@ export default function App() {
   };
 
   const handleToastHide = () => {};
+  const applyWeatherPoints = () => {
+    return getLocationWeatherPoints().then((res) => {
+      locationPointGlobalStore.getState().setLocationsList(res);
+    });
+  };
 
   useEffect(() => {
     if (!user) {
@@ -107,6 +110,7 @@ export default function App() {
     }
     applyUserSubscription(user);
     const socket = SocketService.instance;
+    applyWeatherPoints();
     return () => {
       socket.unsubscribe("risks/" + user.id);
     };
@@ -121,13 +125,20 @@ export default function App() {
         userGlobalStore.getState().setToken(token);
         const foundUser = await getUserDetails();
         sendPushTokenToServer(token, foundUser).then((results) => {
-          if (results && results.user) {
-            userGlobalStore.getState().setUser(results.user);
+          const thisUser =
+            foundUser ||
+            (results?.user && results?.user.id ? results?.user : null);
+          if (thisUser && !foundUser) {
+            userGlobalStore.getState().setUser(thisUser);
           }
-          if (!foundUser) {
+          if (!thisUser) {
             return;
           }
-          socket.publish("token", { token, user: foundUser.id });
+          socket.publish("token", { token, user: thisUser.id });
+          if (locationPointGlobalStore.getState().locationsList.length) {
+            return;
+          }
+          applyWeatherPoints();
         });
       })
       .catch((e) => {
@@ -138,20 +149,13 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-    // Fetch weather points (and location details) and update the global store.
-    getLocationWeatherPoints().then((res) => {
-      console.log("EVENTS SUBSCRIPTION", res);
-      // TODO: remove this
-      locationPointGlobalStore.getState().setLocationsList(res);
-    });
-  }, [user]);
-
   return (
-    <View className={Platform.OS === "android" ? "flex-1" : "flex-1 relative"}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      // keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} // adjust based on your layout
+      className={Platform.OS === "android" ? "flex-1" : "flex-1 relative"}
+    >
+      {/* <View className={Platform.OS === "android" ? "flex-1" : "flex-1 relative"}> */}
       <View style={styles.toastContainer}>
         {toastMessages.map((message, i) => (
           <WeatherToast
@@ -174,7 +178,8 @@ export default function App() {
           onOpacityChange={handleLayerOpacity}
         ></BottomNav>
       )}
-    </View>
+      {/* </View> */}
+    </KeyboardAvoidingView>
   );
 }
 

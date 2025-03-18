@@ -44,7 +44,6 @@ const TimeLapseForLayer: React.FC<{ layer: MapProps }> = ({ layer }) => {
     if (AnimationConstants.OFF) {
       return;
     }
-    let stepCount = 0;
     // final opacity for the new hour
     let index = 0;
     const targetOpacity = 1;

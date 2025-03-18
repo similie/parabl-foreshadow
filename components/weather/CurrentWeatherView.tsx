@@ -117,7 +117,7 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ weather, text }) => {
 
       <View className="flex items-center">
         <CloudySVG
-          coverage={weather.values[WeatherType.TOTAL_CLOUD_COVER].value}
+          coverage={weather.values[WeatherType.TOTAL_CLOUD_COVER]?.value}
           isDay={weather.isDay}
         />
       </View>

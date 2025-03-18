@@ -241,15 +241,30 @@ export async function getLocationWeather(
 export const WeatherMapProps: Partial<
   Record<WeatherType, Record<string, any>>
 > = {
-  [WeatherType.TWO_METER_TEMP]: { typeOfLevel: "heightAboveGround", level: 2 },
+  [WeatherType.TWO_METER_TEMP]: {
+    typeOfLevel: "heightAboveGround",
+    level: 2,
+    stepType: "instant",
+  },
   [WeatherType.TWO_METER_REL_HUM]: {
     typeOfLevel: "heightAboveGround",
     level: 2,
+    stepType: "instant",
   },
   [WeatherType.TOTAL_CLOUD_COVER]: {
-    typeOfLevel: "atmosphere",
     level: 0,
     stepType: "avg",
+    typeOfLevel: "atmosphere",
+  },
+  [WeatherType.PRECIPITATION_RATE]: {
+    stepType: "accum",
+    typeOfLevel: "surface",
+    level: 0,
+  },
+  [WeatherType.WIND_SPEED_GUST]: {
+    stepType: "instant",
+    typeOfLevel: "surface",
+    level: 0,
   },
 };
 
