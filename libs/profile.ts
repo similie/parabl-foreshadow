@@ -76,7 +76,22 @@ export async function registeredUser(params: Partial<User>) {
   verifyOTPValidity(results);
   return results.data;
 }
-export const logoutUser = () => {
+
+export const logoutApi = async () => {
+  const userState = userGlobalStore.getState().user;
+  const token = userGlobalStore.getState().token;
+  const results = await axios.post(getApiUrl("appusers", "logout"), {
+    token,
+    user: userState?.id,
+  });
+  if (results.data.error) {
+    throw new Error(results.data.error);
+  }
+  return results.data;
+};
+
+export const logoutUser = async () => {
+  await logoutApi();
   userGlobalStore.getState().setUser(null);
   return AsyncStorage.removeItem("@user");
 };
@@ -97,7 +112,11 @@ export const getUserDetails = async (): Promise<User | null> => {
     const jsonValue = await AsyncStorage.getItem("@user");
     const user = jsonValue != null ? JSON.parse(jsonValue) : null;
     // userGlobalStore((state) => state.setUser(user));
-    if (user && !userGlobalStore.getState().user) {
+    const userState = userGlobalStore.getState().user;
+    if (
+      (user && !userState) ||
+      (userState && user && userState?.id !== user?.id)
+    ) {
       userGlobalStore.getState().setUser(user);
     }
 

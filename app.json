@@ -9,9 +9,6 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "config": {
-        "googleMapsApiKey": "AIzaSyDX9flUWNPTYr2T9fjBVEQV-ehoJ1hR6gI"
-      },
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app uses your location to provide personalized content.",
@@ -21,11 +18,7 @@
     },
     "android": {
       "googleServicesFile": "./android/app/google-services.json",
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyDX9flUWNPTYr2T9fjBVEQV-ehoJ1hR6gI"
-        }
-      },
+      "config": {},
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -71,12 +64,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "googleApiKey": "AIzaSyDX9flUWNPTYr2T9fjBVEQV-ehoJ1hR6gI",
       "router": {
         "origin": false
-      },
-      "eas": {
-        "projectId": "09d70d2a-78b0-4f5a-8a34-072900e1ddce"
       }
     },
     "owner": "guernica0131"
