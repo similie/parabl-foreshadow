@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+# 🌦️ Foreshadow API – The Future of Weather Insights 🚀
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Welcome to **Foreshadow API**, the beating heart of **Parabl Foreshadow**, the mobile app that helps communities stay ahead of climate risks! Powered by **Similie**, a small but mighty tech company in Timor-Leste, we're on a mission to build innovative solutions for international development and climate adaptation.
 
-## Get started
+## 🌏 What is Parabl Foreshadow?
 
-1. Install dependencies
+Imagine if you could **see into the future**—well, at least when it comes to climate risks. **Parabl Foreshadow** lets users select any point on a map and get real-time weather insights, alerts, and risk assessments based on dynamic weather conditions.
 
-   ```bash
-   npm install
-   ```
+### 🔥 What Makes It Cool?
 
-2. Start the app
+- 📍 **Geo-based Climate Risk Alerts** – Choose a location, and we'll warn you about extreme weather.
+- 🌪️ **Weather Intelligence** – We process incoming weather data to assess and predict risk conditions.
+- 🗺️ **Weather Tile Mapping** – Overlay various climate parameters on the map to understand potential threats.
+- 🔄 **Open-Source & Community-Driven** – Free for all, built for impact.
 
-   ```bash
-    npx expo start
-   ```
+## 🌊 The API Behind the Magic
 
-In the output, you'll find options to open the app in a
+**Foreshadow API** is what powers all these features! It processes climate data, runs risk calculations, and serves up beautifully mapped weather insights so that **farmers, fishers, and decision-makers** can stay one step ahead of Mother Nature.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Stay tuned for the full API documentation (coming soon™). Until then, keep an eye on the horizon, and let **Foreshadow** light the way! 🌞🌧️⚡
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### About Similie
 
-## Get a fresh project
+Similie is a technology company based out of Timor-Leste, dedicated to developing innovative solutions that support international development initiatives and climate-change adaption. Our mission is to harness the power of technology to drive positive change and improve lives around the world. With a focus on sustainability, community engagement, and social impact, we strive to create products and services that make a real difference in people's lives.
 
-When you're ready, run:
+### Contributors to Ellipsies
 
-```bash
-npm run reset-project
-```
+We extend our heartfelt gratitude to the following individuals for their invaluable contributions to the development and success of Parabl Foreshadow
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+If you would like to join this list and contribute to Ellipsies, please refer to our CONTRIBUTING.md guide for more information on how to get involved.
 
-## Learn more
+Thank you for your continued support and contributions!
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Built with ❤️ by **Similie** in Timor-Leste – Tech should **empower, not overwhelm**.
