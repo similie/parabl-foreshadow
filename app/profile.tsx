@@ -99,9 +99,11 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    setIsSaving(true);
+    await logoutUser();
     routeHome(); // Redirect to login page
+    // setIsSaving(false);
   };
 
   return (
@@ -126,10 +128,6 @@ const ProfilePage: React.FC = () => {
               </View>
             </>
           )}
-          {/* <View style={styles.infoContainer}>
-            <Text style={styles.infoLabel}>Phone:</Text>
-            <Text style={styles.infoValue}>{user!.phone || ""}</Text>
-          </View> */}
         </>
       )}
 
