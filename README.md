@@ -13,8 +13,15 @@ Imagine being able to peek at tomorrow's weather risks, anywhere on the globe. W
 
 ## 📸 Screenshots
 
-_(Insert amazing screenshots here, showcasing your beautiful UI and interactive maps!)_
-
+<table>
+  <tr>
+    <td><img src="./docs/images/chiang-khurea.png" alt="Chiang Khurea" width="200"/></td>
+    <td><img src="./docs/images/global-temp.png" alt="Global Temp" width="200"/></td>
+    <td><img src="./docs/images/forecast.png" alt="Forecast" width="200"/></td>
+    <td><img src="./docs/images/california-rain.png" alt="California Rain" width="200"/></td>
+    
+ </tr>
+</table>
 ## 🔧 Getting Started
 
 To run Parabl Foreshadow locally, you'll need a few things set up first:
