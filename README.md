@@ -1,34 +1,86 @@
-# 🌦️ Foreshadow API – The Future of Weather Insights 🚀
+# 🌦️ Parabl Foreshadow – See Tomorrow's Weather Today! 🚀
 
-Welcome to **Foreshadow API**, the beating heart of **Parabl Foreshadow**, the mobile app that helps communities stay ahead of climate risks! Powered by **Similie**, a small but mighty tech company in Timor-Leste, we're on a mission to build innovative solutions for international development and climate adaptation.
+Welcome to **Parabl Foreshadow**, the playful yet powerful mobile app designed to help you stay ahead of Mother Nature! Built by the innovative folks at **Similie** in Timor-Leste, Parabl Foreshadow brings climate-risk insights straight to your fingertips—wherever you are, wherever you care about.
 
-## 🌏 What is Parabl Foreshadow?
+## 🌏 What’s Parabl Foreshadow All About?
 
-Imagine if you could **see into the future**—well, at least when it comes to climate risks. **Parabl Foreshadow** lets users select any point on a map and get real-time weather insights, alerts, and risk assessments based on dynamic weather conditions.
+Imagine being able to peek at tomorrow's weather risks, anywhere on the globe. With Parabl Foreshadow, you can do exactly that:
 
-### 🔥 What Makes It Cool?
+- 📍 **Geo-based Early Warning Alerts:** Save your favorite locations (your home, farm, grandma's house, or that secret fishing spot) and receive early alerts about extreme weather conditions.
+- 🌤️ **Detailed 4-Day Forecasts:** Get detailed point forecasts for any location to plan your adventures—or avoid trouble—days ahead.
+- 🕒 **Real-Time Weather Checks:** Instantly view the current time and weather conditions anywhere around the globe.
+- 🌪️ **Global Weather Layers:** Visualize global weather patterns with interactive map layers showing temperature, precipitation, wind gusts, humidity, and cloud cover. Because who doesn't love pretty maps?
 
-- 📍 **Geo-based Climate Risk Alerts** – Choose a location, and we'll warn you about extreme weather.
-- 🌪️ **Weather Intelligence** – We process incoming weather data to assess and predict risk conditions.
-- 🗺️ **Weather Tile Mapping** – Overlay various climate parameters on the map to understand potential threats.
-- 🔄 **Open-Source & Community-Driven** – Free for all, built for impact.
+## 📸 Screenshots
 
-## 🌊 The API Behind the Magic
+_(Insert amazing screenshots here, showcasing your beautiful UI and interactive maps!)_
 
-**Foreshadow API** is what powers all these features! It processes climate data, runs risk calculations, and serves up beautifully mapped weather insights so that **farmers, fishers, and decision-makers** can stay one step ahead of Mother Nature.
+## 🔧 Getting Started
 
-Stay tuned for the full API documentation (coming soon™). Until then, keep an eye on the horizon, and let **Foreshadow** light the way! 🌞🌧️⚡
+To run Parabl Foreshadow locally, you'll need a few things set up first:
 
-### About Similie
+### 🚀 Clone the Project
 
-Similie is a technology company based out of Timor-Leste, dedicated to developing innovative solutions that support international development initiatives and climate-change adaption. Our mission is to harness the power of technology to drive positive change and improve lives around the world. With a focus on sustainability, community engagement, and social impact, we strive to create products and services that make a real difference in people's lives.
+```bash
+git clone git@github.com:similie/parabl-foreshadow.git
+cd parabl-foreshadow
+```
 
-### Contributors to Ellipsies
+### 🔑 Setup Environment Variables
 
-We extend our heartfelt gratitude to the following individuals for their invaluable contributions to the development and success of Parabl Foreshadow
+Create a `.env` file in your project's root directory and fill it with:
 
-If you would like to join this list and contribute to Ellipsies, please refer to our CONTRIBUTING.md guide for more information on how to get involved.
+```env
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+PARABL_FORESHADOW_API_HOST=https://your-foreshadow-api-host
+```
 
-Thank you for your continued support and contributions!
+_(Don't have an API key? Head to [Foreshadow API](https://foreshadow.parabl.io) to sign up and get one!)_
 
-Built with ❤️ by **Similie** in Timor-Leste – Tech should **empower, not overwhelm**.
+### 📦 Install Dependencies
+
+```bash
+npm install
+```
+
+### 📱 Running the App (Expo)
+
+```bash
+npm run start
+```
+
+### 🤖 Building for Android
+
+- Follow [Expo’s Android build instructions](https://docs.expo.dev/build/setup/) to configure your local build environment.
+- Download your `google-services.json` file from Firebase and place it in the `android/app/` directory.
+- Build your APK:
+
+```bash
+cd android && ./gradlew :app:assembleRelease
+```
+
+_(Don't forget to keep your build keys safe!)_
+
+## 🌊 Powering the Magic: Foreshadow API
+
+Parabl Foreshadow is powered by our open-source [**Foreshadow API**](https://github.com/similie/foreshadow-api), an API that processes Global Forecast System (GFS) data into precise point forecasts and map tile services.
+
+Want to roll your own API? Check out the [Foreshadow API repo](https://github.com/similie/parabl-foreshadow-api) for setup instructions and more!
+
+## 👩‍💻 Contributions & Community
+
+Want to help build the future of weather insights? We're open-source and community-driven!
+
+Check out our [CONTRIBUTING.md](./CONTRIBUTING.md) file for guidance on how you can contribute to Parabl Foreshadow and make the world a bit safer, one forecast at a time!
+
+## 🙌 Contributors
+
+Huge thanks to our awesome contributors for helping Parabl Foreshadow shine! _(Your name could be here—come join us!)_
+
+## 🎉 About Similie
+
+[**Similie**](https://similie.org) is a tech company from Timor-Leste dedicated to building innovative solutions for international development and climate adaptation. We believe tech should **empower, not overwhelm**, and we're here to make positive impacts worldwide.
+
+---
+
+Built with ❤️ by **Similie** in Timor-Leste

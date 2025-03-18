@@ -91,7 +91,10 @@ export const logoutApi = async () => {
 };
 
 export const logoutUser = async () => {
-  await logoutApi();
+  try {
+    await logoutApi();
+  } catch {}
+
   userGlobalStore.getState().setUser(null);
   return AsyncStorage.removeItem("@user");
 };
