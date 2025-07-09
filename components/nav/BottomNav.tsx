@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Platform,
 } from "react-native";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import { PanGestureHandler, Gesture } from "react-native-gesture-handler";
 import { MotiView } from "moti";
 import { ChevronUpIcon, ChevronDownIcon } from "react-native-heroicons/solid";
 import { BottomNavProps } from "@types";

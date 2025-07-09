@@ -19,6 +19,7 @@ class SocketService {
 
   public connect(url: string, token: string): void {
     if (!this.socket) {
+      console.log("Connecting to Socket.IO server at", url);
       this.socket = io(url, {
         transports: ["websocket", "webtransport", "polling"],
         reconnection: true,

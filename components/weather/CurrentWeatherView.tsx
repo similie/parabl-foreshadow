@@ -86,7 +86,7 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ weather, text }) => {
   const weatherParams: { label: string; key: string }[] = [
     { key: WeatherType.TWO_METER_TEMP, label: "Temperature" },
     { key: WeatherType.WIND_SPEED_GUST, label: "Wind Speed" },
-    { key: WeatherType.PRECIPITATION_RATE, label: "Total Rainfall" },
+    { key: WeatherType.PRECIPITATION_RATE, label: "Rainfall" },
   ];
 
   return (
@@ -158,7 +158,7 @@ const CurrentWeather: React.FC<CurrentWeatherProps> = ({ weather, text }) => {
                   style={keyValues[param.key]?.style}
                   className="flex-grow ml-4"
                 >
-                  {`${keyValues[param.key]?.value || ""}${
+                  {`${keyValues[param.key]?.value || 0.0}${
                     keyValues[param.key]?.unit || ""
                   }`}
                 </Text>

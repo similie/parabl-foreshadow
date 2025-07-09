@@ -1,6 +1,6 @@
-import { LocationObjectCoords } from "expo-location";
 import { CurrentWeatherType, CurrentWeatherValues } from "../weather";
 import { LocationPoint } from "../context";
+import { LocationObjectCoords } from "../location";
 
 // Define props interface
 export interface MapProps {
@@ -28,14 +28,14 @@ export interface LayoutProps {
 
 export interface BottomNavProps {
   selectedLayers: string[];
-  onToggleLayer: (layerId: string, opacity: number) => void;
+  onToggleLayer: (layerId: string, layer: MapLayerItem) => void;
   onOpacityChange: (layerId: string, opacity: number) => void;
 }
 
 export interface LayerButtonProps {
   layer: MapLayerItem;
   active: boolean;
-  onToggleLayer: (layerId: string, opacity: number) => void;
+  onToggleLayer: (layerId: string, layer: MapLayerItem) => void;
   onOpacityChange: (layerId: string, opacity: number) => void;
 }
 

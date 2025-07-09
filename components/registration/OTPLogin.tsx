@@ -1,5 +1,5 @@
 import { verifyOtp } from "@/libs/otp";
-import React, { useEffect, useRef, useState } from "react";
+import React, { Ref, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ const OTPLogin: React.FC<{
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [otpSending, setOtpSending] = useState(false);
   const [isOtpValid, setIsOtpValid] = useState(false);
-  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const inputRefs = useRef<Ref<TextInput>[]>([]);
   //   let intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const startOTPTimer = () => {
@@ -44,7 +44,9 @@ const OTPLogin: React.FC<{
     const updatedOtp = [...otp];
     updatedOtp[index] = text;
     setOtp(updatedOtp);
-    inputRefs.current[index - 1]?.focus();
+    if (inputRefs.current && inputRefs.current[index - 1]) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleReset = () => {
@@ -81,7 +83,6 @@ const OTPLogin: React.FC<{
     startOTPTimer();
     return () => {
       // Cleanup the debounce timer on unmount
-      console.log("KILLING THE OTP");
     };
   }, []);
 
@@ -91,7 +92,10 @@ const OTPLogin: React.FC<{
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            ref={(ref) => (inputRefs.current[index] = ref)}
+            ref={(ref) => {
+              inputRefs.current[index] = ref as React.Ref<TextInput>;
+            }}
+            returnKeyType="done" // tell iOS to show a “Done” key
             style={styles.otpInput}
             value={digit}
             onChangeText={(text) => handleOtpChange(text, index)}
@@ -105,7 +109,7 @@ const OTPLogin: React.FC<{
               }
             }}
             maxLength={1}
-            keyboardType="numeric"
+            keyboardType="number-pad"
           />
         ))}
       </View>

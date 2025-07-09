@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -60,7 +60,7 @@ const CurrentWeatherDrawer: React.FC<CurrentWeatherDrawerProps> = ({
     transform: [{ translateX: translateX.value }],
   }));
 
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: NodeJS.Timeout | number | null = null;
 
   const applyTimeout = () => {
     timeoutId = setTimeout(refreshedCoordinates, refreshTimeout);
@@ -115,7 +115,7 @@ export default CurrentWeatherDrawer;
 const styles = StyleSheet.create({
   drawerContainer: {
     position: "absolute",
-    top: 56,
+    top: Platform.OS === "ios" ? 56 : 16,
     right: 0,
     width: drawerWidth,
     backgroundColor: "white",

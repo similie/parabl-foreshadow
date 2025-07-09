@@ -9,16 +9,16 @@ import {
   RiskIndicatorMapValue,
   WeatherType,
   AttentionAlert,
+  LatLng,
 } from "@types";
 import axios from "axios";
 import { httpServer, tileServer } from "./config";
 import { LocationObjectCoords } from "expo-location";
 import { userGlobalStore } from "./context";
-import { LatLng } from "react-native-maps";
 import { convertUtcToLocal } from "./utils";
 import { LocationPoint } from "@/types/context";
 import { EventEmitter } from "events";
-import { StyleProp, TextStyle } from "react-native";
+import { Platform, StyleProp, TextStyle } from "react-native";
 // Create and export a global EventEmitter instance.
 export const globalEventEmitter = new EventEmitter();
 // You can define event names as constants for reuse:
@@ -32,17 +32,23 @@ export const convertToWeatherValues = (weatherValues: PointForecastValue[]) => {
     if (!w) {
       continue;
     }
-    const meta = w.metadata;
+    const meta = w.metadata || {};
     const key = meta.key;
-    weather[key] = {
-      value: w.value,
-      units: w.units,
-      min: meta.minimum,
-      max: meta.maximum,
-      name: meta.parameterName,
-      date: parseWeatherToDate(w),
-      risk: w.risk,
-    };
+    try {
+      weather[key] = {
+        value: w.value,
+        units: meta.parameterUnits,
+        min: meta.minimum,
+        max: meta.maximum,
+        name: meta.parameterName,
+        date: parseWeatherToDate(w),
+        risk: w.risk,
+      };
+      // console.log("Weather key is here and it's queer:", key, weather[key]);
+    } catch (error) {
+      console.error("Error converting weather values:", error);
+    }
+    // Handle the error as needed, e.g., log it or throw a custom error
   }
   return weather;
 };
@@ -267,6 +273,24 @@ export const WeatherMapProps: Partial<
     level: 0,
   },
 };
+export const ICON_W = 55;
+export const ICON_H = 65;
+export const MAP_POINT_ANCHOR = { x: 0.6, y: 1 }; //1.3 };
+export const MARKER_VIEW_STYLE = {
+  width: ICON_W,
+  height: ICON_H,
+  zIndex: 10, // ensure on top of tiles
+  ...(Platform.OS === "ios"
+    ? {
+        transform: [{ translateX: -4 }, { translateY: -ICON_H / 2 }],
+      }
+    : {}),
+};
+export const MAP_POINT_STYLE = {
+  width: 55,
+  height: 65,
+  backgroundColor: "transparent",
+};
 
 export const getMappingLayer = (
   model: string,
@@ -286,6 +310,7 @@ export const getMappingLayer = (
   const outUrl = `${tileServer}/tiles/${model}/${field}/${time}/{z}/{x}/{y}${MAP_IMAGE_FORMAT}?${
     params.toString() || ""
   }`;
+  // console.log("OUT URL", outUrl);
   return outUrl;
 };
 
@@ -295,6 +320,19 @@ export const buildLayerItem = (layer: MapLayerItem) => {
    */
 
   return `${layer.model}/${layer.id}`;
+};
+
+export const expandLayerItem = (layer: MapLayerItem, time = 0): MapProps => {
+  /**
+   * I want to select layer.id if it is type MayLayerItem or layer.layer if it is from MapProps
+   */
+
+  return {
+    layer: layer.id,
+    model: layer.model,
+    time, // Default time, can be adjusted later
+    opacity: layer.opacity || DEFAULT_OPACITY, // Default opacity, can be adjusted later
+  };
 };
 
 export const buildLayerItemProps = (layer: MapProps) => {
@@ -310,24 +348,31 @@ export const AnimationConstants = {
   ANIMATION_INTERVAL_MS: 50, // ~20 fps
   STEPS: 20,
   DEFAULT_OPACITY: 0.7,
-  OFF: true,
+  OFF: false,
 };
 
 export const parseWeatherToDate = (weather: PointForecastValue) => {
   const meta = weather.metadata;
-  const dataDate = meta.dataDate.toString(); // Example: 2025-01-23
+  if (!meta || !meta.dataDate || !meta.dataTime) {
+    // console.error("Invalid metadata for weather value:", meta);
+    return new Date();
+  }
+  const dataDate = meta.dataDate.toString(); // Example: 20250123'
   const year = parseInt(dataDate.substring(0, 4));
   const month = parseInt(dataDate.substring(4, 6)) - 1; // Months are 0-based in JavaScript
   const day = parseInt(dataDate.substring(6, 8));
   const dataTime = meta.dataTime.toString();
-  const hours = parseInt(dataTime.substring(0, 1)); // For "600", this will be 6
-  const minutes = parseInt(dataTime.substring(2, 4) || "0"); // For "600", this will be 0
+  const intDataTime = parseInt(dataTime);
+  const hours = intDataTime / 100; // parseInt(dataTime.substring(0, 1)); // For "600", this will be 6
+  const minutes = parseInt(
+    dataTime.substring(dataTime.length === 3 ? 1 : 2, dataTime.length) || "0",
+  ); // For "600", this will be 0
   // Create a Date object in local time
   const localDate = new Date(year, month, day, hours, minutes);
-
   // Convert to UTC timestamp (milliseconds since epoch)
+  const forecastTime = meta.forecastTime || meta.forecastStart || 0; // Default to 0 if not provided
   let utcTimestamp = localDate.getTime();
-  utcTimestamp += meta.forecastTime * 60 * 60 * 1000;
+  utcTimestamp += forecastTime * 60 * 60 * 1000;
   try {
     const localDateTime = convertUtcToLocal(utcTimestamp);
     return new Date(localDateTime);

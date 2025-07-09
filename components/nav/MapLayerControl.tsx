@@ -18,7 +18,7 @@ const BottomNav: React.FC<LayerButtonProps> = ({
         className="flex content-center items-center"
       >
         <TouchableOpacity
-          onPress={() => onToggleLayer(buildLayerItem(layer), layer.opacity)}
+          onPress={() => onToggleLayer(buildLayerItem(layer), layer)}
         >
           <Text style={styles.drawerItemText}>{layer.label}</Text>
         </TouchableOpacity>
@@ -36,7 +36,7 @@ const BottomNav: React.FC<LayerButtonProps> = ({
         )}
         <TouchableOpacity
           className=""
-          onPress={() => onToggleLayer(buildLayerItem(layer), layer.opacity)}
+          onPress={() => onToggleLayer(buildLayerItem(layer), layer)}
         >
           <Text style={styles.drawerItemText}>{active ? "On" : "Off"}</Text>
         </TouchableOpacity>

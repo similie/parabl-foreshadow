@@ -27,6 +27,20 @@ export enum RiskIndicatorMap {
   vHigh = "Extreme",
 }
 
+export type LatLng = {
+  latitude: number;
+  longitude: number;
+};
+
+export enum RiskIndicatorMapDirectValue {
+  "Non-Threatening",
+  "Very Low",
+  "Low",
+  "Moderate",
+  "High",
+  "Extreme",
+}
+
 export enum RiskIndicatorMapValue {
   noThreat,
   vLow,
@@ -54,7 +68,9 @@ export type WeatherValuesMap = {
 export type ParameterMetaData = {
   dataDate: number;
   dataTime: number;
-  forecastTime: number;
+  forecastTime?: number;
+  forecastStart?: number;
+  forecastEnd?: number;
   level: number;
   maximum: number;
   minimum: number;

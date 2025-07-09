@@ -25,6 +25,11 @@ const FullScreenModal: React.FC<FullScreenModalProps> = ({
   modalLocation,
   selectedLocation,
 }) => {
+  console.log(
+    "FullScreenModal rendered with location:",
+    modalLocation,
+    selectedLocation,
+  );
   return (
     <SafeAreaView style={styles.safeArea}>
       <Modal
