@@ -1,5 +1,25 @@
 import { DateTime } from "luxon";
 
+export const frameToLocalTime = (
+  frame: number,
+  startTime: Date = new Date(),
+): string => {
+  const now = DateTime.fromJSDate(startTime).toLocal();
+
+  // If we're at 30 minutes or more past the hour, jump to the next hour,
+  // otherwise use the start of this hour.
+  const baseHour =
+    now.minute >= 30
+      ? now.plus({ hours: 1 }).startOf("hour")
+      : now.startOf("hour");
+
+  // Add the frame offset
+  const target = baseHour.plus({ hours: frame });
+
+  // Return in h:mm a format, e.g. "3:00 PM"
+  return target.toFormat("h:mm a");
+};
+
 export const extractSimpleTimeFromDate = (datetime: Date) => {
   const date = DateTime.fromJSDate(datetime);
   return date.toLocaleString(DateTime.DATETIME_SHORT);
@@ -47,7 +67,7 @@ export const debounceCallback = <T extends (...args: any[]) => void>(
   callback: T,
   delay: number,
 ) => {
-  let timer: NodeJS.Timeout | null = null;
+  let timer: NodeJS.Timeout | number | null = null;
   return (...args: Parameters<T>) => {
     if (timer) {
       clearTimeout(timer); // Clear the previous timer if it exists

@@ -1,0 +1,10 @@
+node_modules \*_/_.log
+.git
+.gitignore
+
+# …then explicitly include your native dirs:
+
+!/android
+!/ios
+
+app-release.apk

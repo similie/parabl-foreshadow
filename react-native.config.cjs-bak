@@ -1,0 +1,16 @@
+module.exports = {
+  project: {
+    android: {
+      // make sure this matches the applicationId in android/app/build.gradle
+      packageName: "com.similie.parablforeshadow",
+      sourceDir: "android",
+      manifestPath: "android/app/src/main/AndroidManifest.xml",
+    },
+    ios: {
+      // fill these in only if you need custom iOS autolinking
+    },
+  },
+  dependencies: {
+    // you can leave this empty unless you have custom dependencies to override
+  },
+};

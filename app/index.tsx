@@ -2,13 +2,16 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Platform, KeyboardAvoidingView } from "react-native";
 import {
   BottomNav,
-  Map,
+  GLMap,
   SideNav,
   SideNavContent,
   WeatherToast,
 } from "@components";
-import { ForecastWarning, MapProps } from "@types";
+import { ForecastWarning, MapLayerItem, MapProps } from "@types";
 import {
+  buildLayerItem,
+  buildLayerItemProps,
+  expandLayerItem,
   extractMedTimeFromDate,
   getLocationWeatherPoints,
   getUserDetails,
@@ -35,22 +38,31 @@ export default function App() {
     return { model, layer };
   };
 
-  const setMapLayers = (layers: string[], opacity: number, time = 0) => {
-    setSelectedMapLayers(
-      layers.map((layerItem) => {
-        const { layer, model } = layerSplit(layerItem);
-        return { layer, time, model, opacity };
-      }),
-    );
+  const setMapLayers = (layers: string[], currentLayer: MapLayerItem) => {
+    const layerItems: Record<string, { layer: string; model: string }> = {};
+    layers.forEach((layerItem) => {
+      const { layer, model } = layerSplit(layerItem);
+      layerItems[layerItem] = { layer, model };
+    });
+    setSelectedMapLayers((prev) => {
+      const updated = prev.filter(
+        (item) => layerItems[buildLayerItemProps(item)],
+      );
+      if (updated.length === layers.length) {
+        return updated;
+      }
+      const expandedLayer = expandLayerItem(currentLayer);
+      updated.push(expandedLayer);
+      return updated;
+    });
   };
 
-  const handleToggleLayer = (layerName: string, opacity: number) => {
+  const handleToggleLayer = (layerName: string, layer: MapLayerItem) => {
     setSelectedLayers((prev) => {
-      // const { layer } = layerSplit(layerName);
       const updatedLayers = prev.includes(layerName)
         ? prev.filter((id) => id !== layerName)
         : [...prev, layerName];
-      setMapLayers(updatedLayers, opacity);
+      setMapLayers(updatedLayers, layer);
       return updatedLayers;
     });
   };
@@ -166,7 +178,7 @@ export default function App() {
         ))}
       </View>
       {/* Map */}
-      <Map selectedLayers={selectedMapLayers} />
+      <GLMap selectedLayers={selectedMapLayers} />
       {/* Side Drawer */}
       <SideNav>
         <SideNavContent />

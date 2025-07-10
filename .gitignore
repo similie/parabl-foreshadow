@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-
+remove-secrects.txt
 # Expo
 .expo/
 dist/
@@ -39,3 +39,12 @@ app-example
 google-services.json
 AndroidManifest.xml
 debug.keystore
+adb.txt
+
+/android
+/ios
+# Expo
+.expo
+dist/
+web-build/
+*.apk
