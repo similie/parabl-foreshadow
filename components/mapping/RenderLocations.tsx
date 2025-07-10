@@ -1,32 +1,19 @@
 import { MarkerView } from "@maplibre/maplibre-react-native";
 import React, { useState } from "react";
 import PointSvg from "./PointSvg";
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { LocationPoint } from "@/types/context";
-import {
-  ICON_H,
-  ICON_W,
-  MAP_POINT_ANCHOR,
-  MAP_POINT_STYLE,
-  MARKER_VIEW_STYLE,
-} from "@libs";
+import { MAP_POINT_ANCHOR, MAP_POINT_STYLE, MARKER_VIEW_STYLE } from "@libs";
 
 const RenderLocations: React.FC<{
   locations: LocationPoint[];
   onSelect: (loc: LocationPoint) => void;
-}> = ({ locations, onSelect }) => {
+  color?: string;
+}> = ({ locations, onSelect, color }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   return (
     <>
       {locations.map((loc) => {
-        // console.log("RenderLocations", loc);
-        // const isSelected = loc.id === selectedId;
         return (
           <MarkerView
             key={`location-marker-${loc.id}`}
@@ -43,7 +30,7 @@ const RenderLocations: React.FC<{
                 setSelectedId((id) => (id === loc.id ? null : loc.id))
               }
             >
-              <PointSvg location={loc} />
+              <PointSvg location={loc} color={color} />
             </TouchableOpacity>
           </MarkerView>
         );

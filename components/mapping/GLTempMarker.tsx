@@ -6,7 +6,8 @@ import { MAP_POINT_ANCHOR, MAP_POINT_STYLE, MARKER_VIEW_STYLE } from "@libs";
 const GLTempMarker: React.FC<{
   tempMarker: [number, number] | null;
   handleModalOpen: (lat: number, lng: number) => void;
-}> = ({ tempMarker, handleModalOpen }) => {
+  color?: string;
+}> = ({ tempMarker, handleModalOpen, color }) => {
   return (
     <>
       {tempMarker && (
@@ -24,7 +25,7 @@ const GLTempMarker: React.FC<{
             style={MAP_POINT_STYLE}
             onPress={() => handleModalOpen(tempMarker[1], tempMarker[0])}
           >
-            <PointSvg />
+            <PointSvg color={color} />
           </TouchableOpacity>
         </MarkerView>
       )}
